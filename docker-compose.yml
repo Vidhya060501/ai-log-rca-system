@@ -1,0 +1,85 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: rca-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - rca-network
+    restart: unless-stopped
+ 
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: rca-backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env.example
+    environment:
+      - LLM_PROVIDER=${LLM_PROVIDER:-ollama}
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-mistral}
+      - OLLAMA_EMBED_MODEL=${OLLAMA_EMBED_MODEL:-nomic-embed-text}
+      - LLM_MODEL=${LLM_MODEL:-mistral}
+      - LLM_TEMPERATURE=${LLM_TEMPERATURE:-0.2}
+      - USE_PGVECTOR=${USE_PGVECTOR:-false}
+      - POSTGRES_CONNECTION_STRING=${POSTGRES_CONNECTION_STRING:-}
+      - FAISS_PERSIST_DIR=/app/faiss_index
+
+    depends_on:
+      - ollama
+
+
+    volumes:
+      - ./backend/faiss_index:/app/faiss_index
+    networks:
+      - rca-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:11434/api/tags >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: rca-frontend
+    ports:
+      - "3001:80"
+    depends_on:
+      - backend
+    networks:
+      - rca-network
+    restart: unless-stopped
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: rca-postgres
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-rca_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-rca_password}
+      - POSTGRES_DB=${POSTGRES_DB:-rca_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - rca-network
+    restart: unless-stopped
+    profiles:
+      - pgvector
+
+networks:
+  rca-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  ollama_data:
