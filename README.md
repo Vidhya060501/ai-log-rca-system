@@ -1,4 +1,8 @@
-AI Log Root Cause Analysis System
+![Python](https://img.shields.io/badge/Python-3.10-blue)
+![FastAPI](https://img.shields.io/badge/FastAPI-backend-green)
+![Docker](https://img.shields.io/badge/Docker-containerized-blue)
+
+**AI Log Root Cause Analysis System**
 
 ⚠️ This repository is an experimental project exploring AI-assisted root cause analysis for large-scale application logs using retrieval-augmented generation (RAG).
 
@@ -28,7 +32,21 @@ Key Capabilities
 
 ⸻
 
-High-Level Architecture
+## System Demo
+
+Example interaction with the log RCA system.
+
+User query: Why did the Kafka consumer fail?
+
+Retrieved log evidence: 
+[ERROR] KafkaConsumer: Commit failed due to group rebalance
+[WARN] KafkaConsumer: Consumer group rebalancing triggered
+
+AI-generated root cause analysis:
+The logs indicate that the Kafka consumer failed due to a consumer group rebalance event.
+Offset commits failed because the consumer lost partition ownership during rebalancing.
+
+**High-Level Architecture**
 
 User (Browser)
       │
