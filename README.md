@@ -1,226 +1,239 @@
-# 🔍 Intelligent RCA Chatbot (Log Analysis with RAG + Ollama)
+AI Log Root Cause Analysis System
 
-A **full-stack Root Cause Analysis (RCA) chatbot** that performs **evidence-based log analysis using Retrieval-Augmented Generation (RAG)**.  
-Built with **FastAPI, React, LangChain, FAISS, and Ollama**, this system guarantees that answers are generated **only from uploaded logs**, preventing hallucinations.
+⚠️ This repository is an experimental project exploring AI-assisted root cause analysis for large-scale application logs using retrieval-augmented generation (RAG).
 
----
+The system indexes logs into vector embeddings and retrieves relevant failure patterns to help engineers diagnose production incidents across distributed services.
 
-## ✨ Key Highlights
+Unlike typical AI chatbots, this system enforces evidence-based answers, meaning responses are generated strictly from retrieved log context rather than speculation.
 
-- ✅ **True RAG (Retrieval-Augmented Generation)**
-- ✅ **Local LLM via Ollama (No OpenAI / No paid APIs)**
-- ✅ **Semantic log search with FAISS**
-- ✅ **Strict evidence-based answers**
-- ✅ **Negative-case correctness (refuses wrong answers)**
-- ✅ **Streaming chat responses**
-- ✅ **Fully Dockerized**
+⸻
 
----
+Engineering Motivation
 
-## 🧠 What Makes This Project Different?
+Debugging distributed systems often requires engineers to manually search through thousands of logs across multiple services. Important signals are frequently buried within repetitive log patterns, making root cause discovery slow and error-prone.
 
-Unlike typical AI chatbots, this system:
+This project explores how vector search + retrieval-augmented generation (RAG) can accelerate incident diagnosis by retrieving relevant log evidence and summarizing it in context.
 
-- Uses **retrieved log evidence only**
-- Refuses to speculate if logs do not support the question
-- Detects **wrong-topic queries** (e.g., Kafka logs ≠ Kubernetes issues)
-- Shows **exact log sources** used in answers
+The goal is to experiment with building AI-assisted observability tools that help engineers navigate large volumes of operational logs more efficiently.
 
-This makes it suitable for:
-- Production RCA workflows
-- SRE / DevOps analysis
-- Interview demonstrations
-- AI safety / grounding examples
+⸻
 
----
+Key Capabilities
+	•	Evidence-based root cause analysis using retrieved log context
+	•	Semantic log search using FAISS vector embeddings
+	•	Local LLM inference via Ollama (no external API dependencies)
+	•	Hallucination prevention by enforcing context-only responses
+	•	Streaming chat responses
+	•	Fully containerized deployment with Docker
 
-## 🏗️ High-Level Architecture
+⸻
+
+High-Level Architecture
 
 User (Browser)
-|
-v
+      │
+      ▼
 React Frontend
-|
-v
+      │
+      ▼
 FastAPI Backend
-|
-|– FAISS Vector Store (log embeddings)
-|
+      │
+      ├── Log ingestion + chunking
+      ├── Embedding generation
+      │
+      ▼
+FAISS Vector Store
+      │
+      ▼
+Context Retrieval
+      │
+      ▼
+LLM (Ollama)
+      │
+      ▼
+Root Cause Summary
 
----
 
-## 🧩 Actual RAG Workflow (Implemented)
-|– Ollama (Local LLM)
+⸻
 
-1.	User uploads logs
-	2.	Logs are chunked
-	3.	Each chunk → embedding (Ollama embeddings)
-	4.	Stored in FAISS vector index
+Retrieval-Augmented Log Analysis Workflow
 
-When a user asks a question:
-5. Query → embedding
-6. FAISS similarity search
-7. Relevant log chunks retrieved
-8. Context + question → LLM prompt
-9. LLM answers ONLY from context
-10. If no evidence → hard refusal
+Log ingestion:
+	1.	Logs are uploaded or pasted into the system
+	2.	Logs are chunked into smaller segments
+	3.	Each chunk is converted into vector embeddings
+	4.	Embeddings are stored in a FAISS vector index
 
-✔ This is **real RAG**, not prompt stuffing.
+Query workflow:
+	5.	User question is converted to an embedding
+	6.	FAISS retrieves the most relevant log chunks
+	7.	Retrieved logs are passed as context to the LLM
+	8.	LLM generates a response strictly from retrieved evidence
 
----
+If no relevant logs are retrieved, the system refuses to generate an answer.
 
-## 🚀 Features
+⸻
 
-### 🔹 Log Ingestion
-- Upload `.log` or `.txt` files
-- Paste logs manually
-- Each line indexed independently
+Features
 
-### 🔹 Semantic Search
-- FAISS-based vector similarity search
-- Relevance scoring and filtering
+Log Ingestion
+	•	Upload .log or .txt files
+	•	Manual log paste support
+	•	Independent indexing of log lines
 
-### 🔹 Hallucination Guardrails
-- No retrieved logs → **No answer**
-- Wrong-topic logs → **Explicit rejection**
-- Mandatory evidence requirement
+Semantic Log Search
+	•	Vector similarity search using FAISS
+	•	Relevant log chunks retrieved based on query meaning
 
-### 🔹 Chat Interface
-- Streaming responses
-- Markdown formatting
-- Source attribution per response
+Hallucination Guardrails
 
----
+The system prevents speculative answers:
+	•	No retrieved logs → no response generated
+	•	Irrelevant logs → explicit rejection
+	•	Responses must reference actual log evidence
 
-## 🧰 Tech Stack
+Interactive Chat Interface
+	•	Streaming responses
+	•	Markdown formatting
+	•	Source attribution for retrieved log evidence
 
-### Backend
-- FastAPI
-- LangChain
-- FAISS
-- Ollama (Mistral / LLaMA-family models)
+⸻
 
-### Frontend
-- React (Vite)
-- Axios
-- React Markdown
+Technology Stack
 
-### Infrastructure
-- Docker
-- Docker Compose
+Backend
+	•	FastAPI
+	•	LangChain
+	•	FAISS
+	•	Ollama (local LLM inference)
 
----
+Frontend
+	•	React (Vite)
+	•	Axios
+	•	React Markdown
 
-## 📋 Prerequisites
+Infrastructure
+	•	Docker
+	•	Docker Compose
 
-- Docker
-- Docker Compose
+⸻
 
-❌ No OpenAI API key required  
-❌ No paid APIs  
-❌ No cloud dependency for local use  
+Prerequisites
+	•	Docker
+	•	Docker Compose
 
----
+No external API keys required.
 
-## 🛠️ Local Setup (Recommended)
+The system runs entirely with local models via Ollama.
 
-### 1️⃣ Clone the Repository
-```bash
-git clone https://github.com/<your-username>/rca-chatbot.git
-cd rca-chatbot
+⸻
 
-2️⃣ Start the Application
+Local Setup
+
+Clone the repository
+
+git clone https://github.com/Vidhya060501/ai-log-rca-system.git
+cd ai-log-rca-system
+
+Start the application
 
 docker compose up --build
 
 This launches:
-	•	Ollama (LLM)
-	•	FastAPI backend
 	•	React frontend
+	•	FastAPI backend
+	•	Ollama for local LLM inference
 
 ⸻
 
-3️⃣ Access the Application
-	•	Frontend: http://localhost:3001
-	•	Backend API: http://localhost:8000
-	•	Swagger Docs: http://localhost:8000/docs
+Access the Application
+
+Frontend
+http://localhost:3001
+
+Backend API
+http://localhost:8000
+
+Swagger documentation
+http://localhost:8000/docs
 
 ⸻
 
-🧪 How to Use
-	1.	Upload logs using the sidebar
-	2.	Ask questions like:
-	•	Any Kafka rebalance errors?
-	•	Why did offset commits fail?
-	•	Are there Kubernetes pod eviction errors?
-	3.	The system:
-	•	Answers only if evidence exists
-	•	Refuses if logs don’t support the question
+Example Usage
+	1.	Upload log files
+	2.	Ask diagnostic questions such as:
+
+	•	Why did the Kafka consumer fail?
+	•	Are there timeout errors in the payment service?
+	•	Did any Kubernetes pods crash recently?
+
+	3.	The system retrieves relevant logs and generates an evidence-based explanation.
+
+If no evidence is found, the system explicitly states that the logs do not support the query.
 
 ⸻
 
-🔐 Hallucination Prevention (Critical Design)
+API Endpoints
 
-The system will not:
-	•	Guess missing data
-	•	Invent root causes
-	•	Cross-apply unrelated logs
+Method	Endpoint	Description
+POST	/api/logs/upload	Upload and index logs
+POST	/api/chat	Ask a question
+POST	/api/chat/stream	Streaming chat response
+GET	/api/logs/search	Semantic log search
+GET	/health	Health check
 
-If evidence is missing, the response is:
-
-No evidence found in the uploaded/indexed logs to answer this question. Please upload relevant logs or refine your query.
-
-This is enforced at:
-	•	Vector retrieval layer
-	•	Application logic layer
-	•	LLM prompt level
 
 ⸻
 
-📖 API Endpoints
+Docker Services
 
-| Method | Endpoint              | Description                 |
-|--------|-----------------------|-----------------------------|
-| POST   | /api/logs/upload      | Upload and index logs       |
-| POST   | /api/chat             | Ask a chat question         |
-| POST   | /api/chat/stream      | Streaming chat response     |
-| GET    | /api/logs/search      | Semantic log search         |
-| GET    | /health               | Health check                |
+Service	Port	Description
+frontend	3001	React UI
+backend	8000	FastAPI backend
+ollama	11434	Local LLM + embeddings
 
-🐳 Docker Services
+Optional:
 
-| Service Name | Container Name | Port Mapping        | Description                                      |
-|-------------|----------------|---------------------|--------------------------------------------------|
-| frontend    | rca-frontend   | 3001 → 80           | React UI served via Nginx                        |
-| backend     | rca-backend    | 8000 → 8000         | FastAPI backend for RCA & RAG logic              |
-| ollama      | rca-ollama     | 11434 → 11434       | Local LLM & embedding inference (Ollama)         |
-| postgres*   | rca-postgres   | 5432 → 5432         | Optional pgvector store for embeddings           |
+Service	Port	Description
+postgres	5432	pgvector store (optional)
 
-🔒 Security Notes
-	•	No secrets committed
-	•	.env files ignored via .gitignore
+
+⸻
+
+Security Notes
+	•	No secrets committed to the repository
+	•	.env files excluded via .gitignore
 	•	Local-first architecture
-	•	Ready for cloud secrets managers if deployed
+	•	Can be integrated with cloud secret managers if deployed
 
 ⸻
 
-📦 Deployment Status
-	•	✅ Local Docker deployment
-	•	✅ GitHub repository
-	•	🔜 AWS ECS deployment (planned)
+Current Limitations
+	•	Retrieval quality depends heavily on log chunking strategy
+	•	Large log datasets may require improved indexing techniques
+	•	Prompt structure for summarization is still being refined
+
+This repository is actively evolving as I experiment with improving log retrieval pipelines and root cause summarization methods.
 
 ⸻
 
-📜 License
+Deployment Status
+
+Current
+	•	Local Docker deployment
+	•	GitHub repository
+
+Planned
+	•	Cloud deployment (AWS ECS)
+
+⸻
+
+License
 
 MIT License
 
 ⸻
 
-🤝 Contributing
+Contributing
 
-Pull requests are welcome.
-
-⸻
-
-
+Pull requests and experimentation ideas are welcome.
